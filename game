@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Prompt Master Duel</title>
+<style>
+:root{--navy:#0B1F3A;--navy2:#132d52;--navy3:#1c3d6b;--gold:#E3B04B;--cyan:#35C6E8;--white:#fff;--red:#E5484D;--blue:#3E8BFF;--green:#2FB67C;--muted:#9fb3cf}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(ellipse at 50% -10%,#1d4478 0%,var(--navy) 60%) fixed;background-color:var(--navy);color:var(--white);font:16px/1.45 "Segoe UI",system-ui,-apple-system,sans-serif;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;background-image:radial-gradient(#35C6E833 1px,transparent 1px);background-size:28px 28px;animation:drift 40s linear infinite;pointer-events:none;z-index:-1}
+@keyframes drift{to{background-position:280px 560px}}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+input{font:inherit}
+header{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;z-index:20;background:linear-gradient(var(--navy) 60%,transparent)}
+.logo{background:#fff;border-radius:10px;padding:5px 10px;display:flex;align-items:center}
+.logo img{height:24px;display:block}
+.logo span{color:var(--navy);font-weight:800}
+.icon-btn{background:var(--navy3);border:1px solid #2f5488;border-radius:10px;padding:6px 10px;font-size:18px}
+.icon-btn.off{opacity:.35;text-decoration:line-through}
+.screen{display:none;min-height:100vh;padding:70px 16px 28px;max-width:560px;margin:0 auto;flex-direction:column;gap:14px}
+.screen.on{display:flex;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(12px)}}
+.title{font-size:clamp(34px,9vw,52px);font-weight:900;line-height:1;margin:18px 0 0;text-align:center;letter-spacing:-.5px;background:linear-gradient(180deg,#fff3c9,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 18px #E3B04B55)}
+.sub{text-align:center;color:var(--muted);margin:0}
+.vs-hero{display:flex;justify-content:center;align-items:center;gap:18px;font-size:64px;margin:6px 0}
+.vs-hero b{font-size:26px;color:var(--gold);font-style:italic}
+.vs-hero span{animation:bob 2s ease-in-out infinite}
+.vs-hero span:last-child{animation-delay:-1s}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.card{background:var(--navy2);border:1px solid #27497a;border-radius:16px;padding:16px}
+.field{width:100%;padding:14px;border-radius:12px;border:2px solid #2f5488;background:var(--navy);color:#fff;font-size:18px;outline:none}
+.field:focus{border-color:var(--cyan)}
+.btn{background:linear-gradient(180deg,#5fd6f0,var(--cyan));color:var(--navy);font-weight:800;font-size:20px;padding:15px;border-radius:14px;box-shadow:0 5px 0 #1a8fae;transition:transform .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #1a8fae}
+.btn.gold{background:linear-gradient(180deg,#f3cd78,var(--gold));box-shadow:0 5px 0 #a87b22}
+.btn.ghost{background:var(--navy3);color:#fff;box-shadow:0 4px 0 #0a1830;font-size:16px;padding:11px}
+.rules{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.rules li{display:flex;gap:10px;align-items:center;font-size:15px}
+.rules li i{font-style:normal;font-size:20px;width:30px;text-align:center}
+.link{background:none;color:var(--muted);text-decoration:underline;font-size:14px;align-self:center}
+/* countdown */
+#s-count{justify-content:center;align-items:center}
+#cnum{font-size:160px;font-weight:900;color:var(--gold);text-shadow:0 0 40px #E3B04B88}
+.pop{animation:pop .9s ease forwards}
+@keyframes pop{0%{transform:scale(2.4);opacity:0}30%{transform:scale(1);opacity:1}100%{transform:scale(.85);opacity:0}}
+/* play */
+.hud{display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.hud .pill{background:var(--navy3);border-radius:999px;padding:5px 12px}
+#sc{color:var(--gold)}
+#stk.hot{background:linear-gradient(90deg,#ff7a2f,#E3B04B);color:var(--navy);animation:glow 1s infinite alternate}
+@keyframes glow{to{box-shadow:0 0 16px #ff9d3d}}
+.arena{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:linear-gradient(180deg,#183a66,#0f2747);border:1px solid #2a5085;border-radius:16px;padding:10px 12px}
+.fighter{text-align:center}
+.ava{font-size:46px;line-height:1.1;display:inline-block;animation:bob 2.2s ease-in-out infinite}
+#btAva{animation-delay:-1.1s}
+.nm{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hp{height:10px;background:#0a1830;border-radius:6px;overflow:hidden;margin-top:4px;border:1px solid #2f5488}
+.hp i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--green),#7be3b0);transition:width .5s}
+.hp.bot i{background:linear-gradient(90deg,var(--red),#ff8a8e)}
+.vs{font-weight:900;color:var(--gold);font-style:italic}
+.hit{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-9px) rotate(-4deg)}40%{transform:translateX(9px) rotate(4deg)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.timer{position:relative;height:28px;background:#0a1830;border-radius:14px;overflow:hidden;border:1px solid #2f5488}
+.timer i{position:absolute;inset:0 auto 0 0;background:var(--cyan);transition:background .3s}
+.timer span{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;text-shadow:0 1px 3px #000}
+.qtype{align-self:flex-start;background:var(--gold);color:var(--navy);font-weight:800;font-size:13px;padding:4px 10px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px}
+.q{font-size:19px;font-weight:650;margin:0}
+.opts{display:grid;gap:10px}
+@media(min-width:620px){.opts{grid-template-columns:1fr 1fr}}
+.opt{display:flex;align-items:stretch;text-align:left;border-radius:14px;overflow:hidden;min-height:58px;box-shadow:0 4px 0 #00000055;transition:transform .1s,opacity .3s,filter .3s}
+.opt:active{transform:translateY(3px)}
+.opt b{display:grid;place-items:center;width:46px;font-size:20px;background:#00000030}
+.opt span{padding:10px 12px;font-size:15px;display:flex;align-items:center}
+.o0{background:var(--red)}.o1{background:var(--blue)}.o2{background:var(--gold);color:var(--navy)}.o3{background:var(--green)}
+.opt.gone{opacity:.15;pointer-events:none}
+.opt.dim{opacity:.35;filter:grayscale(.6)}
+.opt.right{outline:4px solid #fff;animation:winp .6s}
+.opt.wrong{outline:4px solid #ff8a8e;animation:shake .4s}
+@keyframes winp{50%{transform:scale(1.04)}}
+.pups{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pup{background:var(--navy3);border:2px solid var(--gold);color:var(--gold);border-radius:12px;padding:9px 4px;font-weight:800;font-size:14px}
+.pup small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+.pup:disabled{opacity:.3;border-color:#456;color:#9ab;cursor:default}
+.pup.act{background:var(--gold);color:var(--navy);animation:glow .6s infinite alternate}
+.proj{position:fixed;font-size:36px;z-index:60;pointer-events:none;left:0;top:0}
+.float{position:fixed;z-index:61;font-weight:900;font-size:26px;pointer-events:none;animation:up 1s ease forwards;text-shadow:0 2px 6px #000}
+@keyframes up{to{transform:translate(-50%,-70px);opacity:0}}
+#flash{position:fixed;inset:0;background:#E5484D;opacity:0;pointer-events:none;z-index:40}
+#flash.on{animation:fl .4s}
+@keyframes fl{30%{opacity:.35}}
+.fb{position:fixed;left:0;right:0;bottom:0;z-index:30;transform:translateY(110%);transition:transform .35s cubic-bezier(.2,1.2,.4,1)}
+.fb.on{transform:none}
+.fb .in{max-width:560px;margin:0 auto;background:var(--navy2);border:2px solid var(--green);border-bottom:0;border-radius:20px 20px 0 0;padding:16px 16px 20px;display:grid;gap:8px;box-shadow:0 -10px 30px #0008}
+.fb.bad .in{border-color:var(--red)}
+.fb h3{margin:0;font-size:24px}
+.fb .pts{color:var(--gold);font-weight:900;font-size:22px}
+.fb .det{color:var(--muted);font-size:13px}
+.fb p{margin:0;font-size:15px}
+/* break */
+#s-break{justify-content:center;align-items:center;text-align:center}
+.round{font-size:15px;color:var(--cyan);font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.big{font-size:44px;font-weight:900;color:var(--gold);margin:4px 0}
+.badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.badge{background:var(--navy3);border:1px solid var(--gold);border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px;animation:in .5s backwards}
+/* result */
+.score-big{font-size:58px;font-weight:900;text-align:center;color:var(--gold);line-height:1;text-shadow:0 0 30px #E3B04B66}
+.ko{text-align:center;font-weight:800;font-size:20px}
+.bars{display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:110px 1fr 34px;gap:8px;align-items:center;font-size:13px}
+.bar div{height:12px;background:#0a1830;border-radius:6px;overflow:hidden}
+.bar div i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold));width:0;transition:width 1s}
+.code{text-align:center}
+.code .w{font-size:42px;font-weight:900;letter-spacing:6px;color:#fff;background:#0a1830;border:2px dashed var(--gold);border-radius:14px;padding:10px;margin:8px 0;font-family:Consolas,monospace}
+.row{display:flex;gap:8px}.row>*{flex:1}
+/* trainer */
+#s-trainer{max-width:980px}
+.tin{display:grid;grid-template-columns:2fr 1fr auto;gap:8px}
+#tMsg{min-height:20px;font-size:14px}
+.podium{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;gap:10px;margin-top:8px}
+.pod{text-align:center}
+.pod .n{font-weight:800;font-size:clamp(16px,3vw,28px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .s{color:var(--gold);font-weight:800;font-size:clamp(14px,2.4vw,22px)}
+.pod .blk{border-radius:12px 12px 0 0;display:grid;place-items:center;font-size:clamp(30px,6vw,56px);font-weight:900;color:var(--navy);margin-top:6px}
+.p1 .blk{height:160px;background:linear-gradient(180deg,#f7d98c,var(--gold))}
+.p2 .blk{height:115px;background:linear-gradient(180deg,#e8eef7,#aebdd1)}
+.p3 .blk{height:85px;background:linear-gradient(180deg,#f0b989,#c27a3e)}
+.rank{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.rank li{display:grid;grid-template-columns:36px 1fr auto auto 30px;gap:10px;align-items:center;background:var(--navy2);border-radius:10px;padding:8px 12px;font-size:17px}
+.rank .no{font-weight:900;color:var(--gold)}
+.rank .cd{font-family:Consolas,monospace;color:var(--muted);font-size:13px}
+.rank .x{background:none;color:var(--muted)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="fx" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:55"></canvas>
+<div id="flash"></div>
+<header>
+  <div class="logo"><img src="assets/logo-pakai-ai.png" alt="Pakai.AI" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'Pakai.AI'}))"></div>
+  <div style="display:flex;gap:6px"><button class="icon-btn" id="musBtn" aria-label="Musik">🎵</button><button class="icon-btn" id="sfxBtn" aria-label="Efek suara">🔊</button></div>
+</header>
+
+<!-- 1. SAMBUT -->
+<section class="screen on" id="s-welcome">
+  <div class="vs-hero"><span>🧑‍💼</span><b>VS</b><span>🤖</span></div>
+  <h1 class="title" id="gTitle">Prompt Master Duel</h1>
+  <p class="sub" id="gSub"></p>
+  <div class="card" style="display:grid;gap:12px">
+    <input class="field" id="nameIn" maxlength="20" placeholder="Tuliskan nama Anda" autocomplete="off">
+    <button class="btn" id="startBtn">MULAI DUEL ⚔️</button>
+  </div>
+  <ul class="rules card">
+    <li><i>⏱️</i><span id="ruleTime">20 detik per soal. Semakin cepat menjawab, semakin besar poin yang diperoleh.</span></li>
+    <li><i>⚡</i><span>Jawaban benar menyerang Bot. Jawaban salah membuat Bot menyerang balik.</span></li>
+    <li><i>🃏</i><span>Tiga power-up, masing-masing hanya dapat dipakai sekali: 50:50, +10 detik, dan Poin x2.</span></li>
+  </ul>
+  <button class="link" id="trainerLink">Mode Trainer</button>
+</section>
+
+<!-- 2. HITUNG MUNDUR -->
+<section class="screen" id="s-count"><div id="cnum">3</div></section>
+
+<!-- 3. SOAL -->
+<section class="screen" id="s-play">
+  <div class="hud"><span class="pill" id="qn">1/15</span><span class="pill">Skor <b id="sc">0</b></span><span class="pill" id="stk">🔥 0</span></div>
+  <div class="arena" id="arena">
+    <div class="fighter"><div class="ava" id="plAva">🧑‍💼</div><div class="nm" id="plName">Anda</div><div class="hp"><i id="plHp"></i></div></div>
+    <div class="vs">VS</div>
+    <div class="fighter"><div class="ava" id="btAva">🤖</div><div class="nm">Bot Asal Jawab</div><div class="hp bot"><i id="btHp"></i></div></div>
+  </div>
+  <div class="timer"><i id="tb"></i><span id="tt">20</span></div>
+  <span class="qtype" id="qt"></span>
+  <p class="q" id="qq"></p>
+  <div class="opts" id="opts"></div>
+  <div class="pups">
+    <button class="pup" id="p50">50:50<small>hapus 2 pilihan</small></button>
+    <button class="pup" id="p10">+10 dtk<small>tambah waktu</small></button>
+    <button class="pup" id="p2">Poin x2<small>soal ini</small></button>
+  </div>
+</section>
+
+<!-- 4. UMPAN BALIK -->
+<div class="fb" id="fb"><div class="in">
+  <h3 id="fbT"></h3><div class="pts" id="fbP"></div><div class="det" id="fbD"></div><p id="fbE"></p>
+  <button class="btn gold" id="fbN">Lanjut ▸</button>
+</div></div>
+
+<!-- 5. JEDA -->
+<section class="screen" id="s-break">
+  <div class="round" id="brR"></div><div class="big" id="brS"></div>
+  <p class="sub" id="brT"></p><div class="badges" id="brB"></div>
+</section>
+
+<!-- 6. HASIL -->
+<section class="screen" id="s-result">
+  <div class="round" style="text-align:center">Skor Akhir</div>
+  <div class="score-big" id="rScore">0</div>
+  <div class="ko" id="rKo"></div>
+  <p class="sub" id="rCorrect"></p>
+  <div class="badges" id="rBadges"></div>
+  <div class="card bars" id="rBars"></div>
+  <div class="card code">
+    <div class="sub">Sampaikan kata kode ini kepada trainer</div>
+    <div class="w" id="rCode">------</div>
+    <button class="btn ghost" id="copyBtn">Salin kata kode</button>
+  </div>
+  <button class="btn" id="againBtn">Main Kembali</button>
+</section>
+
+<!-- 7. MODE TRAINER -->
+<section class="screen" id="s-trainer">
+  <h2 style="margin:0;color:var(--gold)">Mode Trainer · Papan Peringkat</h2>
+  <div class="tin">
+    <input class="field" id="tName" placeholder="Nama peserta" maxlength="20">
+    <input class="field" id="tCode" placeholder="Kata kode" maxlength="6" style="text-transform:uppercase;letter-spacing:3px">
+    <button class="btn" id="tAdd" style="padding:0 18px">Tambah</button>
+  </div>
+  <div id="tMsg"></div>
+  <div class="podium" id="podium"></div>
+  <ol class="rank" id="rank"></ol>
+  <div class="row">
+    <button class="btn gold" id="tWin">🏆 Umumkan Juara</button>
+    <button class="btn ghost" id="tCsv">Unduh CSV</button>
+    <button class="btn ghost" id="tReset">Reset</button>
+    <button class="btn ghost" id="tBack">Kembali</button>
+  </div>
+</section>
+
+<script>
+/* ================== KONFIGURASI (edit bagian ini untuk klien lain) ================== */
+const CONFIG = {
+  judul: "Prompt Master Duel",
+  subjudul: "Training Claude AI · Pakai.AI",
+  detikPerSoal: 20,
+  detikUmpanBalik: 6,
+  // t = jenis soal, q = pertanyaan, o = 4 pilihan, a = indeks jawaban benar (0-3), e = penjelasan
+  soal: [
+    {t:"Prompt Terbaik", q:"Direksi meminta ringkasan laporan penjualan Oktober. Prompt mana yang paling lengkap?",
+     o:["Anda analis penjualan. Ringkas laporan Oktober terlampir untuk direksi dalam 5 poin, sertakan angka-angka kunci.",
+        "Anda analis penjualan. Direksi hanya punya 2 menit sebelum rapat. Ringkas laporan Oktober terlampir dalam 5 bullet, maksimal 100 kata, semua angka dari lampiran.",
+        "Ringkas laporan Oktober terlampir untuk direksi yang akan rapat besok, maksimal 100 kata, dengan bahasa formal dan angka yang akurat.",
+        "Anda analis penjualan senior. Buat ringkasan laporan Oktober yang singkat, padat, jelas, dan menarik untuk direksi dalam format terbaik."],
+     a:1, e:"Hanya pilihan itu yang memuat kelima unsur RCCCF. Pilihan lain kehilangan Context, Role, atau Format, atau memakai kata kabur seperti \"terbaik\"."},
+    {t:"RCCCF", q:"\"Laporan ini akan dibaca tim gudang yang tidak terbiasa dengan istilah keuangan.\" Kalimat ini paling tepat disebut unsur…",
+     o:["Role","Context","Constraint","Format"],
+     a:1, e:"Kalimat itu menjelaskan situasi dan pembaca, jadi termasuk Context. Ia baru menjadi Constraint jika ditulis sebagai aturan, misalnya \"jangan gunakan istilah keuangan\"."},
+    {t:"Cek Fakta", q:"Data: penjualan Q2 Rp 500 juta, Q3 Rp 400 juta. Claude menulis \"penjualan Q3 turun 25%\". Penilaian yang tepat?",
+     o:["Benar, karena selisihnya Rp 100 juta dari Rp 400 juta",
+        "Salah, seharusnya turun 20% karena pembandingnya Q2",
+        "Benar, karena persentase naik dan turun dihitung sama",
+        "Salah, seharusnya turun 80% karena Q3 adalah 80% dari Q2"],
+     a:1, e:"Perubahan dihitung terhadap periode awal: (500 − 400) ÷ 500 = 20%. Membagi dengan Q3 adalah kesalahan hitung yang sering terjadi."},
+    {t:"Fitur Claude", q:"Tim Anda memiliki 30 dokumen kebijakan dan ingin semua anggota bertanya ke Claude dengan acuan dokumen yang sama. Fitur paling tepat?",
+     o:["Skill","Project","Artifacts","Pencarian web"],
+     a:1, e:"Project menyimpan dokumen dan instruksi bersama untuk banyak percakapan. Skill dipakai untuk mengemas cara kerja atau prosedur, bukan kumpulan dokumen acuan."},
+    {t:"Diagnosa Prompt", q:"Prompt \"Buat analisis penjualan yang komprehensif\" menghasilkan jawaban panjang dan tidak fokus. Penyebab utamanya?",
+     o:["Kata \"komprehensif\" terlalu formal untuk Claude",
+        "Tidak ada tujuan, batasan, dan format, sehingga Claude menebak cakupannya",
+        "Datanya terlalu sedikit sehingga Claude mengisi sendiri",
+        "Claude memang cenderung menjawab panjang untuk topik penjualan"],
+     a:1, e:"Tanpa tujuan, batasan, dan format, Claude harus menebak seberapa luas jawabannya. Akibatnya jawaban melebar."},
+    {t:"Prompt Terbaik", q:"Anda meminta Claude membalas email pelanggan yang marah. Tambahan mana yang PALING meningkatkan kualitas balasan?",
+     o:["\"Gunakan bahasa yang sopan, profesional, dan empatik.\"",
+        "\"Pelanggan ini sudah tiga kali komplain soal keterlambatan; kami boleh memberi gratis ongkir, tetapi tidak boleh refund.\"",
+        "\"Anda adalah customer service terbaik dengan pengalaman 20 tahun.\"",
+        "\"Buat balasan yang panjang agar pelanggan merasa diperhatikan.\""],
+     a:1, e:"Fakta situasi dan batas kewenangan memberi Claude informasi yang tidak bisa ditebaknya. Kata sifat umum tidak menambah informasi baru."},
+    {t:"RCCCF", q:"\"Jika data tidak tersedia, tulis 'tidak ada data' dan jangan menebak.\" Kalimat ini termasuk unsur…",
+     o:["Command","Context","Constraint","Format"],
+     a:2, e:"Kalimat itu adalah aturan atau larangan yang membatasi jawaban, sehingga termasuk Constraint."},
+    {t:"Cek Fakta", q:"Tanpa diberi dokumen apa pun, Claude menulis \"menurut survei 2025, 73% perusahaan di Indonesia sudah memakai AI\". Sikap paling tepat?",
+     o:["Pakai, karena Claude menyebutkan tahun survei",
+        "Minta Claude menyertakan tautan, lalu pakai jika tautannya ada",
+        "Anggap angka itu belum terbukti sampai Anda memeriksa sumber aslinya",
+        "Bulatkan menjadi \"sekitar 70%\" agar lebih aman"],
+     a:2, e:"Angka dan tautan bisa dikarang. Yang membuktikan adalah sumber asli yang Anda buka dan baca sendiri."},
+    {t:"Fitur Claude", q:"Setiap akhir bulan Anda membuat laporan dengan langkah yang sama: tarik data, hitung KPI, tulis 3 insight, format tabel standar. Agar Claude otomatis mengikuti langkah itu kapan pun diminta, gunakan…",
+     o:["Project","Skill","Artifacts","Prompt panjang yang disalin setiap bulan"],
+     a:1, e:"Skill mengemas langkah kerja yang berulang sehingga Claude memakainya setiap kali tugas itu diminta."},
+    {t:"Diagnosa Prompt", q:"Claude menjawab dengan angka yang tidak ada di lampiran Anda. Perbaikan prompt yang paling tepat?",
+     o:["\"Tolong lebih teliti lagi.\"",
+        "\"Gunakan HANYA angka dari lampiran; jika tidak ada, tulis 'tidak tersedia'.\"",
+        "\"Anda adalah analis data yang sangat akurat.\"",
+        "\"Jawab lebih singkat agar tidak ada yang salah.\""],
+     a:1, e:"Aturan sumber data yang tegas dan instruksi saat data kosong mencegah Claude mengisi celah dengan tebakan."},
+    {t:"Prompt Terbaik", q:"Hasil Claude sudah 80% sesuai, tetapi nadanya terlalu kaku. Langkah paling efisien?",
+     o:["Tulis ulang prompt dari awal dengan lebih detail",
+        "Di percakapan yang sama: \"Pertahankan isinya, ubah nadanya menjadi lebih hangat seperti contoh berikut: …\"",
+        "Buka percakapan baru dan tempel prompt yang sama",
+        "Minta \"perbaiki hasilnya\" tanpa penjelasan tambahan"],
+     a:1, e:"Iterasi di percakapan yang sama dengan instruksi spesifik dan contoh lebih cepat daripada mengulang dari awal."},
+    {t:"RCCCF", q:"\"Anda konsultan HR. Perusahaan kami punya 50 karyawan dan belum punya aturan cuti. Buat draf SOP cuti, maksimal 2 halaman.\" Unsur apa yang BELUM ada?",
+     o:["Role","Context","Constraint","Format"],
+     a:3, e:"Prompt itu belum menyebut bentuk hasil, misalnya poin bernomor, tabel, atau susunan bab."},
+    {t:"Cek Fakta", q:"Notulen asli: \"Anggaran disetujui manajer, menunggu tanda tangan direktur.\" Ringkasan Claude: \"Anggaran disetujui direktur.\" Kesalahan ini termasuk…",
+     o:["Salah hitung","Salah pelaku dan status keputusan","Salah format penulisan","Bukan kesalahan karena maknanya sama"],
+     a:1, e:"Pelaku dan status keputusan berubah. Kesalahan seperti ini sering lolos karena kalimatnya terdengar wajar."},
+    {t:"Fitur Claude", q:"Anda perlu membersihkan 2.000 baris data penjualan dan menambahkan rumus ringkasan langsung di file kerja tim. Pilihan paling efisien?",
+     o:["Tempel data ke chat lalu salin hasilnya kembali","Claude for Excel","Artifacts","Pencarian web"],
+     a:1, e:"Claude for Excel bekerja langsung di dalam spreadsheet, sehingga data dan rumus tetap berada di file kerja tim."},
+    {t:"Diagnosa Prompt", q:"Anda meminta \"tabel 3 kolom\", tetapi Claude memberi 5 kolom. Langkah paling tepat?",
+     o:["Ulangi prompt yang sama persis",
+        "Sebutkan nama ketiga kolom secara eksplisit dan minta kolom lain dihapus",
+        "Ganti menjadi \"buat tabel sederhana saja\"",
+        "Terima saja karena hasilnya lebih lengkap"],
+     a:1, e:"Instruksi yang eksplisit, seperti nama kolom, menghilangkan ruang tafsir."}
+  ]
+};
+/* ================== AKHIR KONFIGURASI ================== */
+
+const $=id=>document.getElementById(id);
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>n.toLocaleString('id-ID');
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));scrollTo(0,0)}
+function vib(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function shake(el){if(RM)return;el.classList.remove('hit');void el.offsetWidth;el.classList.add('hit')}
+
+/* Musik latar Game 1: tempo cepat, nada minor, nuansa duel */
+const SONG={bpm:148,vol:.3,chords:[[57,60,64],[53,57,60],[48,52,55],[55,59,62]],
+  kick:"x...x...x...x...",snare:"....x.......x...",hat:"x.xxx.xxx.xxx.xx",bass:"x.xox.xox.xox.xo",bassWave:'sawtooth',bassLen:1.2,
+  arp:["0.12.20.1.21.32.","0.12.20.1.2.345.","0.12.20.1.21.32.","5.43.21.0.12.34."],leadWave:'square',leadLen:.8,leadVol:.05};
+/* ---- audio: musik latar + efek suara (disintesis di browser, tanpa file lagu) ---- */
+const AU={ac:null,mg:null,sfx:store.get('au_sfx',true),mus:store.get('au_mus',true),
+  ctx(){try{if(!this.ac){this.ac=new(window.AudioContext||window.webkitAudioContext)();this.mg=this.ac.createGain();this.mg.gain.value=.7;this.mg.connect(this.ac.destination)}if(this.ac.state==='suspended')this.ac.resume()}catch(e){}return this.ac}};
+function tone(f,d,type='sine',v=.15,delay=0){if(!AU.sfx)return;const ac=AU.ctx();if(!ac)return;try{const t=ac.currentTime+delay,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AU.mg);o.start(t);o.stop(t+d)}catch(e){}}
+function makeMusic(song){
+  let iv=0,step=0,nt=0,bus=null,nb=null;const mtof=n=>440*Math.pow(2,(n-69)/12);
+  function osc(t,d,v,type,f,slide){const ac=AU.ac,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(bus);o.start(t);o.stop(t+d+.03)}
+  function noise(t,d,v,hp){const ac=AU.ac;if(!nb){nb=ac.createBuffer(1,ac.sampleRate*.4,ac.sampleRate);const a=nb.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1}const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();s.buffer=nb;f.type='highpass';f.frequency.value=hp;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f).connect(g).connect(bus);s.start(t);s.stop(t+d)}
+  function play(i,t){
+    const s=song,k=i%16,bar=Math.floor(i/16),ch=s.chords[bar%s.chords.length],sd=60/s.bpm/4,arp=s.arp[bar%s.arp.length];
+    if(s.kick[k]==='x')osc(t,.2,.55,'sine',150,40);
+    if(s.snare[k]==='x')noise(t,.14,.22,1800);
+    if(s.hat[k]==='x')noise(t,.035,.07,7000);
+    const b=s.bass[k];if(b!=='.')osc(t,sd*(s.bassLen||1.6),.2,s.bassWave,mtof(ch[0]-12+(b==='o'?12:0)));
+    const a=arp[k];if(a!=='.'){const n=+a,m=ch[n%3]+12*Math.floor(n/3)+12;osc(t,sd*s.leadLen,s.leadVol||.08,s.leadWave,mtof(m))}
+    if(s.pad&&k===0)ch.forEach(n=>osc(t,sd*16,.03,'sine',mtof(n+12)));
+  }
+  return{get on(){return!!iv},
+    start(){const ac=AU.ctx();if(!ac||iv||!AU.mus)return;bus=ac.createGain();bus.gain.value=song.vol;bus.connect(AU.mg);nt=ac.currentTime+.08;step=0;
+      iv=setInterval(()=>{while(nt<ac.currentTime+.15){play(step,nt);nt+=60/song.bpm/4;step++}},30)},
+    stop(){clearInterval(iv);iv=0;if(bus){const b=bus;try{b.gain.setTargetAtTime(0,AU.ac.currentTime,.08)}catch(e){}setTimeout(()=>b.disconnect(),500);bus=null}},
+    bpm(x){song.bpm=x}};
+}
+const MUSIC=makeMusic(SONG);
+function audioUI(){$('musBtn').classList.toggle('off',!AU.mus);$('sfxBtn').textContent=AU.sfx?'🔊':'🔇'}
+$('musBtn').onclick=e=>{e.stopPropagation();AU.mus=!AU.mus;store.set('au_mus',AU.mus);AU.mus?MUSIC.start():MUSIC.stop();audioUI()};
+$('sfxBtn').onclick=e=>{e.stopPropagation();AU.sfx=!AU.sfx;store.set('au_sfx',AU.sfx);audioUI();tone(880,.1)};
+document.addEventListener('pointerdown',()=>{AU.ctx();if(AU.mus&&!MUSIC.on)MUSIC.start()},{once:true,capture:true});
+audioUI();
+const sfx={ok(){[523,659,784,1047].forEach((f,i)=>tone(f,.16,'triangle',.15,i*.07))},bad(){tone(190,.35,'sawtooth',.1);tone(110,.45,'square',.07,.1)},tick(){tone(880,.05,'square',.05)},pow(){tone(660,.1,'sine',.15);tone(990,.18,'sine',.15,.08)},go(){tone(440,.15,'square',.08)},start(){tone(880,.35,'square',.08)},win(){[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',.14,i*.12))}};
+
+/* ---- partikel ---- */
+const cv=$('fx'),cx=cv.getContext('2d');let parts=[],raf=0;
+function rs(){const d=devicePixelRatio||1;cv.width=innerWidth*d;cv.height=innerHeight*d;cx.setTransform(d,0,0,d,0,0)}addEventListener('resize',rs);rs();
+function burst(x,y,cols,n=24,spd=6,g=.15,conf=false){if(RM)return;for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=Math.random()*spd+1;parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-(conf?3:0),g,life:50+Math.random()*50,c:cols[i%cols.length],sz:conf?8:2+Math.random()*3,r:Math.random()*6,conf})}if(!raf)loop()}
+function loop(){cx.clearRect(0,0,innerWidth,innerHeight);parts=parts.filter(p=>p.life-->0);for(const p of parts){p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.vx*=.98;p.r+=.15;cx.globalAlpha=Math.min(1,p.life/25);cx.fillStyle=p.c;if(p.conf){cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillRect(-p.sz/2,-p.sz/4,p.sz,p.sz/2);cx.restore()}else{cx.beginPath();cx.arc(p.x,p.y,p.sz,0,7);cx.fill()}}cx.globalAlpha=1;raf=parts.length?requestAnimationFrame(loop):0}
+function confetti(){for(let k=0;k<6;k++)setTimeout(()=>burst(Math.random()*innerWidth,-10,['#E3B04B','#35C6E8','#ffffff','#2FB67C','#E5484D'],36,7,.12,true),k*220)}
+function center(el){const r=el.getBoundingClientRect();return[r.left+r.width/2,r.top+r.height/2]}
+function floatTxt(x,y,txt,col){const d=document.createElement('div');d.className='float';d.textContent=txt;d.style.color=col;d.style.left=x+'px';d.style.top=y+'px';d.style.transform='translate(-50%,0)';document.body.append(d);setTimeout(()=>d.remove(),1000)}
+function shoot(from,to,emo,cb){const[x1,y1]=center(from),[x2,y2]=center(to);if(RM||!Element.prototype.animate){cb(x2,y2);return}const s=document.createElement('div');s.className='proj';s.textContent=emo;document.body.append(s);const a=s.animate([{transform:`translate(${x1}px,${y1}px) translate(-50%,-50%) scale(.5)`},{transform:`translate(${(x1+x2)/2}px,${Math.min(y1,y2)-50}px) translate(-50%,-50%) scale(1.2)`},{transform:`translate(${x2}px,${y2}px) translate(-50%,-50%) scale(1.5)`}],{duration:420,easing:'ease-in',fill:'forwards'});setTimeout(()=>{s.remove();cb(x2,y2)},420)}
+
+/* ---- kata kode 1 kata (6 huruf) ---- */
+const KON="BDGKLMNPRST",VOK="AIUEO";
+function encode(score){const n=Math.round(score/10),v=n*50+((n*13+7)%50);let w='';[Math.floor(v/3025),Math.floor(v/55)%55,v%55].forEach(s=>{w+=KON[Math.floor(s/5)]+VOK[s%5]});return w}
+function decode(w){w=(w||'').toUpperCase().replace(/[^A-Z]/g,'');if(w.length!==6)return null;let v=0;for(let i=0;i<6;i+=2){const c=KON.indexOf(w[i]),o=VOK.indexOf(w[i+1]);if(c<0||o<0)return null;v=v*55+c*5+o}const n=Math.floor(v/50);return v%50===(n*13+7)%50?n*10:null}
+
+/* ---- state ---- */
+const Q=CONFIG.soal,T=CONFIG.detikPerSoal;
+let S,timerId,deadline,barMax,answered,lastTick,fbTimer;
+$('gTitle').textContent=CONFIG.judul;$('gSub').textContent=CONFIG.subjudul;document.title=CONFIG.judul;
+$('ruleTime').textContent=`${T} detik per soal. Semakin cepat menjawab, semakin besar poin yang diperoleh.`;
+$('nameIn').value=store.get('pmd_name','');
+
+$('startBtn').onclick=()=>{const n=$('nameIn').value.trim();if(!n){$('nameIn').focus();shake($('nameIn'));return}store.set('pmd_name',n);startGame(n)};
+$('nameIn').onkeydown=e=>{if(e.key==='Enter')$('startBtn').click()};
+$('againBtn').onclick=()=>show('s-welcome');
+
+function startGame(name){
+  S={name,idx:0,score:0,streak:0,maxStreak:0,correct:0,fast:0,bot:100,pl:100,pups:{f50:1,t10:1,x2:1},x2:false,res:[]};
+  $('plName').textContent=name;updHud();
+  show('s-count');let n=3;
+  const step=()=>{const el=$('cnum');el.classList.remove('pop');void el.offsetWidth;el.textContent=n>0?n:'DUEL!';el.classList.add('pop');n>0?sfx.go():sfx.start();if(n-->0)setTimeout(step,850);else setTimeout(()=>{show('s-play');loadQ()},800)};
+  step();
+}
+function updHud(){$('qn').textContent=`${Math.min(S.idx+1,Q.length)}/${Q.length}`;$('sc').textContent=fmt(S.score);$('stk').textContent='🔥 '+S.streak;$('stk').classList.toggle('hot',S.streak>=2);$('btHp').style.width=Math.max(0,S.bot)+'%';$('plHp').style.width=Math.max(0,S.pl)+'%'}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function loadQ(){
+  const q=Q[S.idx];answered=false;S.x2=false;updHud();
+  $('qt').textContent=q.t;$('qq').textContent=q.q;
+  const box=$('opts');box.innerHTML='';
+  shuffle(q.o.map((t,i)=>({t,ok:i===q.a}))).forEach((o,i)=>{
+    const b=document.createElement('button');b.className='opt o'+i;b.dataset.ok=o.ok?1:0;
+    b.innerHTML=`<b>${'▲●■◆'[i]}</b><span>${esc(o.t)}</span>`;b.onclick=()=>answer(b);box.append(b)});
+  $('p50').disabled=!S.pups.f50;$('p10').disabled=!S.pups.t10;$('p2').disabled=!S.pups.x2;$('p2').classList.remove('act');
+  barMax=T;deadline=performance.now()+T*1000;lastTick=99;clearInterval(timerId);timerId=setInterval(tick,100);tick();
+}
+function remaining(){return Math.max(0,(deadline-performance.now())/1000)}
+function tick(){
+  const r=remaining(),p=r/barMax;$('tb').style.width=(p*100)+'%';
+  $('tb').style.background=p>.5?'var(--cyan)':p>.25?'var(--gold)':'var(--red)';
+  $('tt').textContent=Math.ceil(r);
+  if(r<=5&&Math.ceil(r)<lastTick&&r>0){lastTick=Math.ceil(r);sfx.tick()}
+  if(r<=0)answer(null);
+}
+$('p50').onclick=()=>{if(answered||!S.pups.f50)return;S.pups.f50=0;$('p50').disabled=true;sfx.pow();
+  shuffle([...document.querySelectorAll('.opt[data-ok="0"]')]).slice(0,2).forEach(b=>b.classList.add('gone'))};
+$('p10').onclick=()=>{if(answered||!S.pups.t10)return;S.pups.t10=0;$('p10').disabled=true;sfx.pow();deadline+=10000;barMax=Math.max(barMax,remaining());const[x,y]=center($('tb').parentNode);floatTxt(x,y,'+10 detik','#35C6E8')};
+$('p2').onclick=()=>{if(answered||!S.pups.x2)return;S.pups.x2=0;S.x2=true;$('p2').disabled=true;$('p2').classList.add('act');sfx.pow()};
+
+function answer(btn){
+  if(answered)return;answered=true;clearInterval(timerId);
+  const q=Q[S.idx],r=remaining(),ok=!!btn&&btn.dataset.ok==='1';
+  document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b.dataset.ok==='1')b.classList.add('right');else if(b===btn)b.classList.add('wrong');else b.classList.add('dim')});
+  let pts=0,det='';
+  if(ok){
+    S.streak++;S.maxStreak=Math.max(S.maxStreak,S.streak);S.correct++;if(T-r<=5)S.fast++;
+    const spd=Math.round(400*Math.min(r,T)/T/10)*10,stb=S.streak>=2?Math.min(50*(S.streak-1),200):0,m=S.x2?2:1;
+    pts=(600+spd+stb)*m;S.score+=pts;
+    det=`Dasar 600 · Kecepatan +${spd}`+(stb?` · Streak +${stb}`:'')+(m>1?' · ×2':'');
+    sfx.ok();vib(30);
+    shoot($('plAva'),$('btAva'),'⚡',(x,y)=>{const d=12*m;S.bot-=d;updHud();shake($('btAva'));burst(x,y,['#E3B04B','#35C6E8','#fff'],30,7);floatTxt(x,y-20,'-'+d,'#E3B04B')});
+  }else{
+    S.streak=0;sfx.bad();vib([80,40,80]);
+    shoot($('btAva'),$('plAva'),'💥',(x,y)=>{S.pl-=12;updHud();shake($('plAva'));shake($('arena'));const f=$('flash');f.classList.remove('on');void f.offsetWidth;f.classList.add('on');burst(x,y,['#E5484D','#ff9d3d'],20,5);floatTxt(x,y-20,'-12','#ff8a8e')});
+    det=S.x2?'Poin x2 hangus di soal ini.':'Streak kembali ke 0.';
+  }
+  S.res.push({t:q.t,ok});updHud();
+  const fb=$('fb');fb.classList.toggle('bad',!ok);
+  $('fbT').textContent=ok?(S.streak>=3?`Benar! Streak ${S.streak} 🔥`:'Benar! ✔'):(btn?'Kurang tepat ✘':'Waktu habis ⏰');
+  $('fbP').textContent=ok?'+'+fmt(pts):'+0';$('fbD').textContent=det;$('fbE').textContent='💡 '+q.e;
+  setTimeout(()=>{fb.classList.add('on');let c=CONFIG.detikUmpanBalik;$('fbN').textContent=`Lanjut ▸ (${c})`;clearInterval(fbTimer);fbTimer=setInterval(()=>{c--;$('fbN').textContent=`Lanjut ▸ (${c})`;if(c<=0)next()},1000)},650);
+}
+$('fbN').onclick=()=>next();
+function next(){
+  clearInterval(fbTimer);if(!$('fb').classList.contains('on'))return;$('fb').classList.remove('on');S.idx++;
+  if(S.idx>=Q.length)return result();
+  if(S.idx%5===0){brk();return}
+  loadQ();
+}
+function badges(){const b=[];if(S.maxStreak>=3)b.push('🔥 Streak '+S.maxStreak);if(S.fast>=3)b.push('⚡ Kilat');if(S.bot<=0)b.push('🥊 Bot KO');if(S.correct===Q.length)b.push('🎯 Sempurna');if(S.res.length&&S.res.every(r=>r.ok))b.push('🛡️ Tanpa Cela');return[...new Set(b)]}
+function brk(){
+  show('s-break');const babak=S.idx/5,tot=Math.ceil(Q.length/5);
+  $('brR').textContent=`Babak ${babak} dari ${tot} selesai`;$('brS').textContent=fmt(S.score);
+  $('brT').textContent=`${S.correct} dari ${S.idx} benar · HP Bot ${Math.max(0,S.bot)}%`;
+  const b=badges();$('brB').innerHTML=(b.length?b:['💪 Tetap semangat!']).map((x,i)=>`<span class="badge" style="animation-delay:${i*.15}s">${x}</span>`).join('');
+  if(b.length){sfx.pow();burst(innerWidth/2,innerHeight/2,['#E3B04B','#35C6E8'],30,6)}
+  setTimeout(()=>{show('s-play');loadQ()},3000);
+}
+function result(){
+  show('s-result');sfx.win();confetti();
+  const target=S.score,st=performance.now();
+  const cnt=setInterval(()=>{const p=Math.min(1,(performance.now()-st)/1200);$('rScore').textContent=fmt(Math.round(target*p));if(p>=1)clearInterval(cnt)},30);
+  $('rKo').textContent=S.bot<=0?'🥊 Bot Asal Jawab KO! Anda memenangkan duel.':'🤖 Bot masih bertahan dengan HP '+Math.max(0,S.bot)+'%.';
+  $('rCorrect').textContent=`${S.correct} dari ${Q.length} benar · Streak terpanjang ${S.maxStreak}`;
+  $('rBadges').innerHTML=badges().map((x,i)=>`<span class="badge" style="animation-delay:${i*.15}s">${x}</span>`).join('');
+  const types=[...new Set(Q.map(q=>q.t))];
+  $('rBars').innerHTML='<div class="sub" style="text-align:left">Kekuatan per jenis soal</div>'+types.map(t=>{const all=S.res.filter(r=>r.t===t),ok=all.filter(r=>r.ok).length;return`<div class="bar"><span>${esc(t)}</span><div><i data-w="${all.length?ok/all.length*100:0}"></i></div><b>${ok}/${all.length}</b></div>`}).join('');
+  setTimeout(()=>document.querySelectorAll('#rBars i').forEach(i=>i.style.width=i.dataset.w+'%'),100);
+  const code=encode(S.score);$('rCode').textContent=code;store.set('pmd_last',{name:S.name,score:S.score,code});
+}
+$('copyBtn').onclick=()=>{const c=$('rCode').textContent;const done=()=>{$('copyBtn').textContent='Tersalin ✔';setTimeout(()=>$('copyBtn').textContent='Salin kata kode',1500)};try{navigator.clipboard.writeText(c).then(done,done)}catch(e){done()}};
+
+/* ---- mode trainer ---- */
+let board=store.get('pmd_board',[]);
+$('trainerLink').onclick=()=>{show('s-trainer');renderBoard()};
+$('tBack').onclick=()=>show('s-welcome');
+function msg(t,ok){$('tMsg').textContent=t;$('tMsg').style.color=ok?'var(--green)':'#ff8a8e'}
+$('tAdd').onclick=()=>{
+  const n=$('tName').value.trim(),c=$('tCode').value.trim().toUpperCase();
+  if(!n)return msg('Isi nama peserta dulu.');
+  const s=decode(c);if(s==null){shake($('tCode'));return msg('Kata kode tidak valid. Minta peserta mengeja ulang.')}
+  board=board.filter(b=>b.name.toLowerCase()!==n.toLowerCase());board.push({name:n,score:s,code:c});store.set('pmd_board',board);
+  msg(`${n}: ${fmt(s)} poin tersimpan.`,true);$('tName').value='';$('tCode').value='';$('tName').focus();renderBoard();
+};
+$('tCode').onkeydown=e=>{if(e.key==='Enter')$('tAdd').click()};
+$('tName').onkeydown=e=>{if(e.key==='Enter')$('tCode').focus()};
+function renderBoard(){
+  const s=[...board].sort((a,b)=>b.score-a.score);
+  const pod=[[s[1],'p2',2],[s[0],'p1',1],[s[2],'p3',3]];
+  $('podium').innerHTML=pod.map(([p,c,n])=>`<div class="pod ${c}"><div class="n">${p?esc(p.name):'—'}</div><div class="s">${p?fmt(p.score):''}</div><div class="blk">${n}</div></div>`).join('');
+  $('rank').innerHTML=s.map((p,i)=>`<li><span class="no">${i+1}</span><span>${esc(p.name)}</span><span class="cd">${p.code}</span><b>${fmt(p.score)}</b><button class="x" data-n="${esc(p.name)}" aria-label="Hapus">✕</button></li>`).join('')||'<li style="grid-template-columns:1fr;color:var(--muted)">Belum ada skor. Masukkan nama dan kata kode peserta.</li>';
+  document.querySelectorAll('.rank .x').forEach(b=>b.onclick=()=>{board=board.filter(p=>p.name!==b.dataset.n);store.set('pmd_board',board);renderBoard()});
+}
+$('tWin').onclick=()=>{sfx.win();confetti();document.querySelectorAll('.pod').forEach(p=>shake(p))};
+$('tReset').onclick=()=>{if(confirm('Hapus semua skor di papan peringkat?')){board=[];store.set('pmd_board',board);renderBoard();msg('Papan dikosongkan.',true)}};
+$('tCsv').onclick=()=>{const s=[...board].sort((a,b)=>b.score-a.score);const csv='Peringkat,Nama,Skor,Kode\n'+s.map((p,i)=>`${i+1},"${p.name.replace(/"/g,'""')}",${p.score},${p.code}`).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));a.download='skor-prompt-master-duel.csv';a.click()};
+</script>
+</body>
+</html>
